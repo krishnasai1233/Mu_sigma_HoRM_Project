@@ -1340,4 +1340,7 @@ if __name__ == "__main__":
     df_raw = load_data()
     df, kmeans, _ = run_clustering_and_anomaly_detection(df_raw.copy())
     
-    app.run(debug=True)
+    # Get port from environment variable (Railway provides this) or default to 5000
+    port = int(os.environ.get("PORT", 5000))
+    # Run on 0.0.0.0 to make it accessible from outside, debug=False for production
+    app.run(host='0.0.0.0', port=port, debug=False)
