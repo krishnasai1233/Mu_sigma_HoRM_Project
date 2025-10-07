@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Executive Overview</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f4f4f4;}
+        .container { padding: 50px; max-width: 1400px; margin:auto;}
+        .filters select { padding:10px 15px; margin-right:10px; }
+        .metric-cards { display:flex; gap:30px; margin-bottom:40px; flex-wrap:wrap;}
+        .metric-card { background:#660000; color:white; width:300px; min-height:150px; border-radius:20px; display:flex; flex-direction:column; justify-content:center; align-items:center; box-shadow:0 10px 25px rgba(0,0,0,0.3);}
+        .graphs { display:flex; flex-wrap:wrap; gap:30px; }
+        .graph-card { background:rgba(255,255,255,0.9); padding:15px; border-radius:20px; width:620px; text-align:center;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Executive Overview</h1>
+
+    <!-- Filters -->
+    <form method="get" action="{{ url_for('overview') }}">
+        <div class="filters">
+            <select name="account_filter" onchange="this.form.submit()">
+                <option value="All">All Accounts</option>
+                {% for acc in accounts %}
+                    <option value="{{ acc }}" {% if selected_account==acc %}selected{% endif %}>{{ acc }}</option>
+                {% endfor %}
+            </select>
+            <select name="designation_filter" onchange="this.form.submit()">
+                <option value="All">All Designations</option>
+                {% for des in designations %}
+                    <option value="{{ des }}" {% if selected_designation==des %}selected{% endif %}>{{ des }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    <!-- Metric Cards -->
+    <div class="metric-cards">
+        <div class="metric-card">
+            <h2>Total Employees</h2>
+            <p>{{ total_employees }}</p>
+        </div>
+        <div class="metric-card">
+            <h2>Avg Bay Hours</h2>
+            <p>{{ avg_bay }}</p>
+        </div>
+        <div class="metric-card">
+            <h2>Billed %</h2>
+            <p>{{ billed_pct }}%</p>
+            <small>Unbilled: {{ unbilled_count }}</small>
+        </div>
+        <div class="metric-card">
+            <h2>Total Leave Days</h2>
+            <p>{{ total_leave_days }}</p>
+        </div>
+    </div>
+
+    <!-- Graphs -->
+    <div class="graphs">
+        <div class="graph-card" id="dist_graph"></div>
+        <div class="graph-card" id="billing_graph"></div>
+        <div class="graph-card" id="prod_graph"></div>
+        <div class="graph-card" id="shift_graph"></div>
+    </div>
+</div>
+
+<script>
+    function renderPlot(id, json_data) {
+        if(json_data){
+            var fig = JSON.parse(json_data);
+            Plotly.newPlot(id, fig.data, fig.layout);
+        }
+    }
+
+    renderPlot('dist_graph', '{{ dist_json | safe }}');
+    renderPlot('billing_graph', '{{ billing_json | safe }}');
+    renderPlot('prod_graph', '{{ prod_json | safe }}');
+    renderPlot('shift_graph', '{{ shift_json | safe }}');
+</script>
+
+</body>
+</html>

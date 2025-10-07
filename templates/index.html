@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Work Pattern Analytics Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --mu-primary: #660000;
+            --mu-secondary: #8B0000;
+            --mu-accent: #A63C00;
+            --mu-success: #28A745;
+            --mu-warning: #FFB300;
+            --mu-danger: #DC3545;
+            --mu-light: #F8F9FA;
+            --mu-dark: #212529;
+            --mu-white: #FFFFFF;
+            --mu-border: #E0E0E0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--mu-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--mu-primary);
+            color: var(--mu-white);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 12px rgba(102, 0, 0, 0.15);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--mu-white);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .logo-img {
+            height: 35px;
+            width: auto;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            color: var(--mu-primary);
+            font-size: 1.1rem;
+        }
+
+        /* Hero Section */
+        .landing-hero {
+            text-align: center;
+            padding: 180px 20px 80px;
+            background: linear-gradient(135deg, var(--mu-primary) 0%, var(--mu-secondary) 100%);
+            color: var(--mu-white);
+            margin-bottom: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .landing-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        .landing-hero h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .landing-hero .subtitle {
+            font-size: 1.4em;
+            font-weight: 400;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 3rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--mu-accent);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        /* Cards Container */
+        .cards-container {
+            max-width: 1200px;
+            margin: 0 auto 80px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+        }
+
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .card {
+            background: var(--mu-white);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 40px rgba(102, 0, 0, 0.12);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            transform: translateY(60px);
+            cursor: pointer;
+            border: 1px solid var(--mu-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--mu-primary), var(--mu-accent));
+        }
+
+        .card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(102, 0, 0, 0.2);
+        }
+
+        .card.show {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.6s ease-out;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--mu-primary), var(--mu-secondary));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--mu-white);
+            font-size: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .card-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .card-content h2 {
+            color: var(--mu-primary);
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .card-content p {
+            color: var(--mu-dark);
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-features {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+
+        .card-features li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--mu-dark);
+        }
+
+        .card-features li i {
+            color: var(--mu-success);
+            font-size: 0.9rem;
+        }
+
+        .card-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--mu-accent);
+            color: var(--mu-white);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .card-cta:hover {
+            background: var(--mu-secondary);
+            transform: translateX(5px);
+        }
+
+        /* Metrics Section */
+        .metrics-section {
+            background: var(--mu-white);
+            padding: 4rem 2rem;
+            margin: 4rem auto;
+            max-width: 1200px;
+            border-radius: 20px;
+            box-shadow: 0 8px 40px rgba(102, 0, 0, 0.08);
+            border: 1px solid var(--mu-border);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .metric-card {
+            background: var(--mu-light);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid var(--mu-primary);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 0, 0, 0.1);
+        }
+
+        .metric-card i {
+            font-size: 2.5rem;
+            color: var(--mu-primary);
+            margin-bottom: 1rem;
+        }
+
+        .metric-card h3 {
+            color: var(--mu-primary);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-card p {
+            color: var(--mu-dark);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--mu-primary);
+            color: var(--mu-white);
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .cards-container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .landing-hero h1 {
+                font-size: 2.8em;
+            }
+            
+            .hero-stats {
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .landing-hero {
+                padding: 140px 20px 60px;
+            }
+
+            .landing-hero h1 {
+                font-size: 2.2em;
+            }
+
+            .landing-hero .subtitle {
+                font-size: 1.1em;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .card {
+                padding: 2rem;
+            }
+
+            .card-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-text {
+                display: none;
+            }
+            
+            .cards-container {
+                padding: 0 15px;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-title">
+        <i class="fas fa-chart-network"></i>
+        WORK ANALYTICS PORTAL
+    </div>
+    <div class="logo-container">
+        <img src="/static/mu_logo_new.png" alt="Mu Sigma Logo" class="logo-img">
+        
+    </div>
+</div>
+
+<div class="landing-hero">
+    <h1>Workforce Dynamics Reporting</h1>
+    <p class="subtitle">Gain clarity on individual employee behavior and aggregated account performance trends with advanced analytics</p>
+    
+    <div class="hero-stats">
+        <div class="stat-item">
+            <span class="stat-number">1.4K+</span>
+            <span class="stat-label">Employees Analyzed</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">98%</span>
+            <span class="stat-label">Accuracy Rate</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">24/7</span>
+            <span class="stat-label">Real-time Insights</span>
+        </div>
+    </div>
+</div>
+
+<div class="cards-container">
+    <a href="{{ url_for('employee_selection_redirect') }}" class="card-link">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Employee Deep Dive</h2>
+                    <p>Analyze individual employee behavior patterns, productivity metrics, and performance insights with granular detail.</p>
+                    
+                    <ul class="card-features">
+                        <li><i class="fas fa-check"></i> Individual productivity analysis</li>
+                        <li><i class="fas fa-check"></i> Behavioral pattern recognition</li>
+                        <li><i class="fas fa-check"></i> Performance trend forecasting</li>
+                        <li><i class="fas fa-check"></i> Customized recommendations</li>
+                    </ul>
+                    
+                    <span class="card-cta">
+                        Explore Employee Insights
+                        <i class="fas fa-arrow-right"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </a>
+
+    <a href="{{ url_for('account_selection_redirect') }}" class="card-link">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Account Performance Review</h2>
+                    <p>Explore comprehensive account-level performance metrics, team efficiency, and strategic improvement opportunities.</p>
+                    
+                    <ul class="card-features">
+                        <li><i class="fas fa-check"></i> Team performance analytics</li>
+                        <li><i class="fas fa-check"></i> Account health monitoring</li>
+                        <li><i class="fas fa-check"></i> Resource optimization insights</li>
+                        <li><i class="fas fa-check"></i> Strategic recommendations</li>
+                    </ul>
+                    
+                    <span class="card-cta">
+                        Analyze Account Performance
+                        <i class="fas fa-arrow-right"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
+
+<div class="metrics-section">
+    <h2 style="text-align: center; color: var(--mu-primary); margin-bottom: 1rem; font-size: 2em;">
+        <i class="fas fa-tachometer-alt"></i>
+        Platform Capabilities
+    </h2>
+    <p style="text-align: center; color: var(--mu-dark); margin-bottom: 3rem; font-size: 1.1em;">
+        Comprehensive analytics platform designed for modern workforce management
+    </p>
+    
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <i class="fas fa-brain"></i>
+            <h3>ML-Powered Insights</h3>
+            <p>Advanced machine learning algorithms for accurate predictions</p>
+        </div>
+        <div class="metric-card">
+            <i class="fas fa-chart-line"></i>
+            <h3>Real-time Analytics</h3>
+            <p>Live data processing and instant performance metrics</p>
+        </div>
+        <div class="metric-card">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Secure & Compliant</h3>
+            <p>Enterprise-grade security with full data compliance</p>
+        </div>
+        <div class="metric-card">
+            <i class="fas fa-rocket"></i>
+            <h3>Fast Processing</h3>
+            <p>Lightning-fast analysis with optimized performance</p>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <p>&copy; 2024 Mu Sigma Analytics Platform. All rights reserved.</p>
+    <p style="opacity: 0.8; margin-top: 0.5rem; font-size: 0.9rem;">
+        Transforming data into actionable insights for better decision making
+    </p>
+</div>
+
+<script>
+    // Enhanced card animation
+    const cards = document.querySelectorAll('.card');
+    
+    function revealCards() {
+        const windowHeight = window.innerHeight;
+        const triggerBottom = windowHeight * 0.85;
+        
+        cards.forEach((card, index) => {
+            const cardTop = card.getBoundingClientRect().top;
+            
+            if(cardTop < triggerBottom){
+                setTimeout(() => {
+                    card.classList.add('show');
+                }, index * 200);
+            }
+        });
+    }
+
+    // Initial check
+    revealCards();
+    
+    // Scroll event listener
+    window.addEventListener('scroll', revealCards);
+    
+    // Add hover sound effect (optional)
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        });
+    });
+
+    // Add loading animation
+    window.addEventListener('load', function() {
+        document.body.style.opacity = '0';
+        document.body.style.transition = 'opacity 0.5s ease-in';
+        
+        setTimeout(() => {
+            document.body.style.opacity = '1';
+            revealCards();
+        }, 100);
+    });
+</script>
+
+</body>
+</html>

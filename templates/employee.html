@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Deep Dive</title>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- Mu Sigma Color Palette --- */
+        :root {
+            --mu-primary: #660000;
+            --mu-secondary: #8B0000;
+            --mu-accent: #A63C00;
+            --mu-success: #28A745;
+            --mu-warning: #FFB300;
+            --mu-danger: #DC3545;
+            --mu-light: #F8F9FA;
+            --mu-dark: #212529;
+            --mu-white: #FFFFFF;
+            --mu-border: #E0E0E0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--mu-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-top: 70px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--mu-primary);
+            color: var(--mu-white);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 12px rgba(102, 0, 0, 0.15);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--mu-white);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            background: var(--mu-accent);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--mu-white);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .logo-img {
+            height: 35px;
+            width: auto;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            color: var(--mu-primary);
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 100px auto 40px;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        /* Search Card */
+        .search-card {
+            background: var(--mu-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            border: 1px solid var(--mu-border);
+        }
+
+        .search-card h2 {
+            color: var(--mu-primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--mu-dark);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--mu-border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--mu-white);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--mu-accent);
+            box-shadow: 0 0 0 3px rgba(166, 60, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--mu-accent);
+            color: var(--mu-white);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--mu-secondary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(166, 60, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--mu-primary);
+            color: var(--mu-white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--mu-secondary);
+            transform: translateY(-1px);
+        }
+
+        /* Employee Details Grid */
+        .details-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: var(--mu-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .detail-card {
+            background: var(--mu-white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            border: 1px solid var(--mu-border);
+        }
+
+        .detail-item {
+            background: var(--mu-white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.08);
+            flex: 1 1 200px;
+            min-width: 160px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--mu-primary);
+            border: 1px solid var(--mu-border);
+        }
+
+        .detail-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(102, 0, 0, 0.12);
+        }
+
+        .detail-item strong {
+            display: block;
+            font-size: 1.6em;
+            color: var(--mu-primary);
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-item span {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        /* Status Cards */
+        .billed-status-card {
+            background: var(--mu-white);
+            border-left: 4px solid var(--mu-success);
+        }
+
+        .billed-status-card.unbilled {
+            background: var(--mu-white);
+            border-left: 4px solid var(--mu-danger);
+        }
+
+        .billed-status-card strong {
+            font-size: 1.8em !important;
+        }
+
+        .allocation-card.allocated {
+            background: var(--mu-white);
+            border-left: 4px solid var(--mu-success);
+        }
+
+        .allocation-card.unallocated {
+            background: var(--mu-white);
+            border-left: 4px solid var(--mu-warning);
+        }
+
+        /* Flow Chart */
+        .flow-section {
+            background: var(--mu-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            border: 1px solid var(--mu-border);
+        }
+
+        .time-breakdown-flow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .flow-node {
+            background: var(--mu-white);
+            border: 2px solid var(--mu-primary);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin: 15px 0;
+            min-width: 300px;
+            max-width: 450px;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(102, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .flow-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 0, 0, 0.15);
+        }
+
+        .flow-node.root {
+            background: var(--mu-accent);
+            color: var(--mu-white);
+            font-weight: 700;
+            min-width: 350px;
+            border-color: var(--mu-accent);
+        }
+
+        .flow-node.minor {
+            background: var(--mu-white);
+            font-size: 0.9em;
+            padding: 1rem 1.5rem;
+            margin: 8px;
+            min-width: unset;
+            max-width: 95%;
+        }
+
+        .flow-arrow {
+            width: 3px;
+            height: 50px;
+            background: linear-gradient(to bottom, var(--mu-primary), var(--mu-accent));
+            position: relative;
+        }
+
+        .flow-arrow::after {
+            content: '▼';
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--mu-primary);
+            font-size: 1em;
+        }
+
+        .flow-level-2 {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+            margin-top: 35px;
+        }
+
+        .time-breakdown-flow>.flow-arrow {
+            height: 75px;
+            margin-top: 5px;
+            margin-bottom: -35px;
+        }
+
+        .flow-level-2::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 53%;
+            height: 3px;
+            background: linear-gradient(to right, var(--mu-primary), var(--mu-accent));
+        }
+
+        .flow-level-2>div {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .flow-level-2 .flow-node {
+            max-width: 100%;
+            margin-top: 35px;
+        }
+
+        .flow-level-2 .flow-node::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 30px;
+            background: linear-gradient(to bottom, var(--mu-primary), var(--mu-accent));
+        }
+
+        .flow-level-2 .flow-node::after {
+            content: '▼';
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--mu-primary);
+            font-size: 1em;
+            z-index: 2;
+        }
+
+        .breaks-sub-flow {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .breaks-sub-flow>.flow-node {
+            margin-bottom: 0;
+        }
+
+        .breaks-sub-flow>.flow-arrow {
+            height: 40px;
+            margin: 0;
+        }
+
+        .flow-level-3-split {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            position: relative;
+            padding-top: 35px;
+        }
+
+        .flow-level-3-split::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 3px;
+            background: linear-gradient(to right, var(--mu-primary), var(--mu-accent));
+        }
+
+        .flow-level-3-split>div {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .flow-level-3-split .flow-node.minor::before {
+            content: '';
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 30px;
+            background: linear-gradient(to bottom, var(--mu-primary), var(--mu-accent));
+        }
+
+        .flow-level-3-split .flow-node.minor::after {
+            content: '▼';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--mu-primary);
+            font-size: 1em;
+            z-index: 2;
+        }
+
+        /* Chart Area - Updated to match account.html */
+        .chart-section {
+            background: var(--mu-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            border: 1px solid var(--mu-border);
+        }
+
+        .chart-plot {
+            height: 500px;
+            width: 100%;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background: var(--mu-white);
+        }
+
+        .chart-narrative {
+            font-size: 0.95em;
+            color: #555;
+            padding: 1.5rem;
+            background: var(--mu-light);
+            border-left: 4px solid var(--mu-primary);
+            border-radius: 8px;
+        }
+
+        .chart-placeholder {
+            text-align: center;
+            padding-top: 100px;
+            color: #666;
+        }
+
+        .chart-error {
+            color: var(--mu-danger);
+            font-weight: 600;
+        }
+
+        /* Analysis Sections */
+        .analysis-section {
+            background: var(--mu-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            border: 1px solid var(--mu-border);
+        }
+
+        .findings-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .findings-list li {
+            background: var(--mu-light);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--mu-accent);
+            transition: all 0.3s ease;
+        }
+
+        .findings-list li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(102, 0, 0, 0.1);
+        }
+
+        .recommendation-box {
+            background: linear-gradient(135deg, var(--mu-primary), var(--mu-secondary));
+            color: var(--mu-white);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.15);
+        }
+
+        .recommendation-box h4 {
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Initial Load Message */
+        .initial-load {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--mu-white);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.08);
+        }
+
+        .initial-load i {
+            font-size: 4rem;
+            color: var(--mu-accent);
+            margin-bottom: 1.5rem;
+        }
+
+        .initial-load h3 {
+            color: var(--mu-primary);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .initial-load p {
+            color: var(--mu-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: var(--mu-danger);
+            color: var(--mu-white);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--mu-primary);
+            color: var(--mu-white);
+            text-align: center;
+            padding: 2rem;
+            margin-top: auto;
+            width: 100%;
+        }
+
+        .footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer p:last-child {
+            margin-bottom: 0;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .container {
+                margin-top: 140px;
+                padding: 0 15px;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .flow-level-2 {
+                flex-direction: column;
+                gap: 10px;
+                padding-top: 0;
+                width: 100%;
+            }
+
+            .flow-level-2::before,
+            .flow-level-2 .flow-node::before,
+            .flow-level-3-split::before,
+            .flow-level-3-split .flow-node.minor::before {
+                display: none;
+            }
+
+            .flow-level-2 .flow-node::after,
+            .flow-level-3-split .flow-node.minor::after {
+                display: none;
+            }
+
+            .flow-level-2>div {
+                padding-top: 10px;
+            }
+
+            .breaks-sub-flow>.flow-arrow {
+                margin: 5px 0 10px 0;
+            }
+
+            .flow-level-3-split {
+                flex-wrap: wrap;
+                padding-top: 0;
+            }
+
+            .flow-level-3-split .flow-node.minor {
+                max-width: 95%;
+                margin-bottom: 10px;
+            }
+
+            .footer {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-link span {
+                display: none;
+            }
+
+            .logo-text {
+                display: none;
+            }
+
+            .footer {
+                padding: 1rem;
+            }
+
+            .footer p {
+                font-size: 0.9rem;
+            }
+
+            .footer p:last-child {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">
+            <i class="fas fa-user-circle"></i>
+            EMPLOYEE WORK DEEP DIVE
+        </div>
+        <div class="nav-links">
+            <a href="{{ url_for('employee') }}" class="nav-link active">
+                <i class="fas fa-user-circle"></i>
+                <span>EMPLOYEE DEEP DIVE</span>
+            </a>
+            <a href="{{ url_for('account') }}" class="nav-link">
+                <i class="fas fa-building"></i>
+                <span>ACCOUNT ANALYSIS</span>
+            </a>
+            <div class="logo-container" onclick="redirectToHome()" style="cursor: pointer;">
+                <img src="static/mu_logo_new.png" alt="Mu Sigma Logo" class="logo-img"
+                    onerror="this.style.display='none'">
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="search-card">
+            <h2><i class="fas fa-search"></i> Individual Employee Behavioral Analysis</h2>
+            <form method="POST" action="{{ url_for('employee') }}" class="search-form">
+                <div class="form-group">
+                    <label for="emp_id">Enter Employee ID</label>
+                    <input type="text" id="emp_id" name="emp_id" value="{{ emp_id if emp_id != 'Enter ID' else '' }}"
+                        placeholder="e.g., {{ suggested_id }}" required>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-rocket"></i>
+                    Analyze
+                </button>
+            </form>
+            {% if error %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ error }}
+            </div>
+            {% endif %}
+        </div>
+
+        {# --- CONDITIONAL BLOCK START: Only show analysis if NOT the initial load --- #}
+        {% if not is_initial_load %}
+
+        <div class="analysis-section">
+            <h3 class="section-title"><i class="fas fa-chart-line"></i> Analysis Results for Employee ID: {{ emp_id }}
+            </h3>
+
+            {% if emp_id and emp_id != 'N/A' %}
+            <a href="{{ url_for('download_report', emp_id=emp_id) }}" class="btn-secondary">
+                <i class="fas fa-download"></i>
+                Download Full Report
+            </a>
+            {% endif %}
+
+            <h4 class="section-title"><i class="fas fa-id-card"></i> Core Employee Details</h4>
+            <div class="detail-card">
+
+                {# ID Card #}
+                <div class="detail-item">
+                    <strong>{{ employee_details['ID'] }}</strong>
+                    <span>ID 🆔</span>
+                </div>
+
+                {# Designation Card #}
+                <div class="detail-item">
+                    <strong>{{ employee_details['Designation'] }}</strong>
+                    <span>Designation 🧑‍💻</span>
+                </div>
+
+                {# Account Card #}
+                <div class="detail-item">
+                    <strong>{{ employee_details['Account Code'] }}</strong>
+                    <span>Account 💼</span>
+                </div>
+
+                {# In Time Card #}
+                <div class="detail-item">
+                    <strong>{{ employee_details['Avg. In Time'] }}</strong>
+                    <span>Avg. In Time ⌚</span>
+                </div>
+
+                {# Out Time Card #}
+                <div class="detail-item">
+                    <strong>{{ employee_details['Avg. Out Time'] }}</strong>
+                    <span>Avg. Out Time 🚪</span>
+                </div>
+
+                {# Billed Status Card #}
+                {% set status_class = 'billed' if employee_details['Billed Status (Client)'] == 'BILLED' else 'unbilled'
+                %}
+                <div class="detail-item billed-status-card {{ status_class }}">
+                    {% set emoji = '✅' if employee_details['Billed Status (Client)'] == 'BILLED' else '🛑' %}
+                    <strong>{{ emoji }} {{ employee_details['Billed Status (Client)'] }}</strong>
+                    <span>Client Billed Status</span>
+                </div>
+
+                {# Allocation Status Card (Updated) #}
+                <div class="detail-item allocation-card {{ employee_details['Allocation Class'] }}">
+                    <strong>{{ employee_details['Allocation Display'] }}</strong>
+                    <span>Resource Allocation</span>
+                </div>
+
+                {# Check-in Count Card #}
+                <div class="detail-item">
+                    <strong>{{ employee_details['Online Check-in Count'] }}</strong>
+                    <span>Online Check-ins 💻</span>
+                </div>
+
+            </div>
+
+            <h4 class="section-title"><i class="fas fa-project-diagram"></i> Work Hour Breakdown Structure (Flowchart)
+            </h4>
+            <div class="flow-section">
+                <div class="time-breakdown-flow">
+                    {# Check if the tree_data variable is available and has the Office Hours key #}
+                    {% if tree_data['Office Hours'] is defined %}
+
+                    <div class="flow-node root">
+                        Office Hours (Total): <strong>{{ tree_data['Office Hours'] }} hrs</strong>
+                    </div>
+
+                    <div class="flow-arrow"></div>
+
+                    <div class="flow-level-2">
+                        <div>
+                            <div class="flow-node">
+                                Focused Work (Bay): <strong>{{ tree_data['Bay Hours (Focused)'] }} hrs</strong>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="breaks-sub-flow">
+                                <div class="flow-node">
+                                    Total Breaks: <strong>{{ tree_data['Break Hours (Total)'] }} hrs</strong>
+                                </div>
+
+                                <div class="flow-arrow"></div>
+
+                                <div class="flow-level-3-split">
+                                    <div>
+                                        <div class="flow-node minor">
+                                            Cafeteria: <strong>{{ tree_data['Cafeteria Hours'] }} hrs</strong>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flow-node minor">
+                                            Out of Office (OOO): <strong>{{ tree_data['OOO Hours'] }} hrs</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <p class="chart-placeholder">Analysis data required to display flow chart.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <h4 class="section-title"><i class="fas fa-chart-bar"></i> Behavioral Comparison & Exception Analysis
+                (Interactive Charts)</h4>
+
+            <div class="chart-section">
+                <div id="chart1_bar_account" class="chart-plot"></div>
+                <p class="chart-narrative"><strong>Chart 1 Narrative (Employee vs. Account):</strong> {{ narrative_1 |
+                    safe }}</p>
+            </div>
+
+            <div class="chart-section">
+                <div id="chart2_bar_company" class="chart-plot"></div>
+                <p class="chart-narrative"><strong>Chart 2 Narrative (Employee vs. Company):</strong> {{ narrative_2 |
+                    safe }}</p>
+            </div>
+
+            <div class="chart-section">
+                <div id="chart3_pie_exceptions" class="chart-plot"></div>
+                <p class="chart-narrative"><strong>Chart 3 Narrative (Leave/Exceptions):</strong> {{ narrative_3 | safe
+                    }}</p>
+            </div>
+
+
+            <h4 class="section-title"><i class="fas fa-search"></i> Key Behavioral Findings:</h4>
+            <ul class="findings-list">
+                {# The 'story' list contains pre-formatted HTML-safe strings. The ** replacement is no longer needed. #}
+                {% for line in story %}
+                <li>{{ line | safe }}</li>
+                {% endfor %}
+            </ul>
+
+            <div class="recommendation-box">
+                <h4><i class="fas fa-bullseye"></i> Actionable Recommendation</h4>
+                <div style="line-height: 1.8;">
+                    {# Filter simplified: The bolding filters are removed as the text is now cleaned in app.py #}
+                    {{ recommendation | safe }}
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        {# --- INITIAL LOAD MESSAGE --- #}
+        <div class="initial-load">
+            <i class="fas fa-user-search"></i>
+            <h3>Welcome to the Employee Deep Dive Tool</h3>
+            <p>Please enter an <strong>Employee ID</strong> in the search bar above to generate the full behavioral
+                analysis, charts, and actionable recommendations.</p>
+            <p style="color: var(--mu-accent); font-weight: 500;">
+                <i class="fas fa-lightbulb"></i>
+                Try analyzing: <strong>{{ suggested_id }}</strong>
+            </p>
+        </div>
+        {% endif %}
+        {# --- CONDITIONAL BLOCK END --- #}
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2024 Mu Sigma Analytics Platform. All rights reserved.</p>
+        <p>Transforming data into actionable insights for better decision making</p>
+    </div>
+
+    <!-- YOUR EXACT JAVASCRIPT CODE - NO CHANGES -->
+    <script>
+
+        function renderPlotly(elementId, jsonString) {
+            try {
+                // IMPORTANT: Jinja passes 'None' as an empty string or 'null'
+                if (!jsonString || jsonString.trim() === 'null' || jsonString.trim() === '{}') {
+                    document.getElementById(elementId).innerHTML = '<p class="chart-placeholder">Analysis required or no data available to generate chart.</p>';
+                    return;
+                }
+
+                const graphData = JSON.parse(jsonString);
+
+                // Check if graphData is a Plotly dict structure
+                if (!graphData.data || !graphData.layout) {
+                    throw new Error("Invalid Plotly JSON structure.");
+                }
+
+                // Render the chart
+                Plotly.newPlot(elementId, graphData.data, graphData.layout, { responsive: true, displayModeBar: true });
+            } catch (e) {
+                console.error(`Error rendering Plotly chart for ${elementId}:`, e);
+                document.getElementById(elementId).innerHTML = '<p class="chart-error chart-placeholder">Error loading chart data. Check browser console/server logs.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Only attempt to render charts if analysis data is present (i.e., not initial load)
+            // The is_initial_load is passed as a string from Flask
+            const isInitialLoad = '{{ is_initial_load }}' === 'True';
+
+            if (!isInitialLoad) {
+                const chart1JsonString = '{{ chart_json_1 | default("{}") | safe }}';
+                const chart2JsonString = '{{ chart_json_2 | default("{}") | safe }}';
+                const chart3JsonString = '{{ chart_json_3 | default("{}") | safe }}';
+
+                renderPlotly('chart1_bar_account', chart1JsonString);
+                renderPlotly('chart2_bar_company', chart2JsonString);
+                renderPlotly('chart3_pie_exceptions', chart3JsonString);
+            }
+        });
+
+        function redirectToHome() {
+            // Try one of these:
+            window.location.href = "{{ url_for('index') }}";
+        }
+    </script>
+</body>
+
+</html>

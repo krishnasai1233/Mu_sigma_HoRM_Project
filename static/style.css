@@ -1,0 +1,276 @@
+:root {
+    /* Modern Aesthetic Colors (Inspired by 15Five, professional look) */
+    --primary-blue: #1976D2;      /* Main Brand Blue (for Header, Primary Buttons) */
+    --secondary-blue: #42A5F5;    /* Lighter Blue (for links, accents) */
+    --accent-green: #4CAF50;      /* Success/Positive Action Green */
+    --accent-amber: #FFB300;      /* Warning/Caution Amber */
+    --bg-light: #F7F9FC;          /* Main Background Off-White */
+    --card-bg: #FFFFFF;           /* Card White Background */
+    --text-dark: #37474F;         /* Dark Text */
+    --text-medium: #546E7A;       /* Medium Text */
+    --border-color: #E0E0E0;      /* Light Gray Border */
+}
+
+/* --- Base Page Styling --- */
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: var(--bg-light); 
+    color: var(--text-dark);
+    margin: 0;
+    padding-top: 60px; /* Space for fixed header */
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* --- Fixed Header Bar --- */
+.header-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: var(--primary-blue);
+    color: var(--card-bg);
+    font-size: 20px;
+    font-weight: 600;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.header-bar .header-title {
+    padding-left: 0;
+}
+
+.header-bar .nav-links {
+    display: flex;
+    align-items: center;
+}
+
+.header-bar a { 
+    color: var(--secondary-blue); 
+    text-decoration: none; 
+    margin-left: 20px; 
+    font-weight: 500; 
+    font-size: 0.9em;
+    transition: color 0.2s;
+}
+
+.header-bar a:hover {
+    color: var(--card-bg);
+}
+
+.logo-container {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+}
+
+.logo-container img {
+    height: 40px; 
+    width: auto;
+    margin: 0;
+}
+
+/* --- Landing Page Hero (index.html specific) --- */
+.landing-hero {
+    text-align: center;
+    padding: 80px 20px 40px;
+}
+
+.landing-hero h1 {
+    color: var(--primary-blue);
+    margin: 0;
+    font-size: 3.5em;
+    font-weight: 300;
+    text-shadow: none;
+}
+
+.landing-hero .subtitle {
+    font-size: 1.3em;
+    font-weight: 400;
+    color: var(--text-medium);
+    margin-top: 10px;
+}
+
+/* --- Card Content Area --- */
+.card { 
+    background: var(--card-bg); 
+    color: var(--text-dark);
+    padding: 25px; 
+    border-radius: 8px; /* Slightly softer corners */
+    margin-bottom: 25px; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Lighter shadow for cleaner look */
+}
+
+/* Headings within Cards */
+h2, h3, h4 { 
+    color: var(--text-dark); 
+}
+
+h4 { 
+    border-bottom: 2px solid var(--border-color); /* Lighter divider */
+    padding-bottom: 5px; 
+    margin-top: 30px; 
+    color: var(--primary-blue); /* Section heading color */
+    font-weight: 600;
+}
+
+/* --- Forms & Inputs --- */
+label {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+input[type=text] { 
+    padding: 10px 12px; 
+    width: 240px; 
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-dark);
+    margin-right: 15px;
+}
+
+/* --- Buttons (Form/Analyze Button) --- */
+button[type=submit] { 
+    padding: 10px 15px; 
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+button[type=submit]:hover {
+    background: #1565C0; /* Darker blue */
+}
+
+/* --- Landing Page Navigation Buttons --- */
+.btn-container {
+    text-align: center;
+}
+.btn { 
+    padding: 20px 40px; 
+    margin: 15px; 
+    font-size: 1.1em; 
+    border-radius: 8px; 
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+.btn-primary { 
+    background: var(--primary-blue); 
+    color: var(--card-bg); 
+}
+.btn-secondary { 
+    background: var(--accent-green); 
+    color: var(--card-bg); 
+}
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    opacity: 0.9;
+}
+
+/* --- Lists & Insights --- */
+ul { 
+    list-style-type: none; 
+    padding-left: 0; 
+}
+li { 
+    margin-bottom: 8px; 
+    line-height: 1.6; 
+    border-left: 3px solid var(--secondary-blue); 
+    padding-left: 15px; 
+    color: var(--text-medium);
+}
+
+.error-msg {
+    color: #C62828; /* Dark Red */
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+/* --- Visuals & Charts --- */
+.chart-flex-container {
+    display: flex; 
+    justify-content: space-around; 
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.chart-flex-container > * {
+    width: 48%; 
+    min-width: 300px;
+}
+
+img { 
+    max-width: 80%; 
+    margin-top: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* --- Recommendations (Context-Specific Colors) --- */
+
+/* Strategic Recommendation (Account - Green for positive/growth) */
+.recommendation.rec-green { 
+    background: #E8F5EE; /* Very Light Green */
+    padding: 15px;
+    border: 1px solid #C8E6C9;
+    border-left: 6px solid var(--accent-green);
+    border-radius: 5px;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+/* Targeted Recommendation (Employee - Amber for caution/review) */
+.recommendation.rec-amber { 
+    background: #FFF8E1; /* Very Light Amber */
+    padding: 15px;
+    border: 1px solid #FFECB3;
+    border-left: 6px solid var(--accent-amber);
+    border-radius: 5px;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+/* --- Table Styling (if still used by Flask render) --- */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 0.9em;
+}
+.data-table thead tr {
+    background-color: var(--primary-blue);
+    color: var(--card-bg);
+}
+.data-table tbody tr:nth-child(even) {
+    background-color: #F7F7F7;
+}
+.data-table tbody tr:hover {
+    background-color: #EFEFEF;
+}
+.data-table th, .data-table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid var(--border-color);
+    color: var(--text-dark);
+}
