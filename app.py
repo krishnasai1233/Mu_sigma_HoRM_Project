@@ -1313,12 +1313,271 @@ def account():
 # ===============================
 
 
+# --- New Overview Page Constants ---
+OVERVIEW_DESIGNATIONS = ['AL', 'Consultant', 'Manager', 'Analyst', 'Dev', 'Tester', 'Senior AL']
+@app.route("/overview", methods=["GET", "POST"])
+def overview():
+    # Get filter parameters
+    selected_designation = request.form.get("designation_filter", "All")
+    selected_account = request.form.get("account_filter", "All")
+    
+    # Filter data based on selections
+    filtered_df = df.copy()
+    
+    if selected_designation != "All":
+        filtered_df = filtered_df[filtered_df[COL_DESIGNATION] == selected_designation]
+    
+    if selected_account != "All":
+        filtered_df = filtered_df[filtered_df[COL_ACCOUNT] == selected_account]
+    
+    # Calculate overview metrics for cards
+    total_employees = len(filtered_df)
+    
+    # Average times
+    avg_in_time = filtered_df[COL_IN].mode()[0] if not filtered_df.empty and not filtered_df[COL_IN].mode().empty else "N/A"
+    avg_out_time = filtered_df[COL_OUT].mode()[0] if not filtered_df.empty and not filtered_df[COL_OUT].mode().empty else "N/A"
+    avg_office_hrs = float_to_h_mm(filtered_df[OFFICE_FLOAT].mean()) if not filtered_df.empty else "0:00"
+    
+    # Average leaves
+    avg_full_day_leaves = round(filtered_df[COL_FULL_DAY].mean(), 1) if not filtered_df.empty else 0
+    avg_half_day_leaves = round(filtered_df[COL_HALF_DAY].mean(), 1) if not filtered_df.empty else 0
+    
+    # Unbilled and Unallocated counts with hover data
+    unbilled_count = len(filtered_df[filtered_df['BILLED_STATUS'] == 'UNBILLED'])
+    unbilled_ids = filtered_df[filtered_df['BILLED_STATUS'] == 'UNBILLED'].index.tolist()
+    
+    unallocated_count = len(filtered_df[filtered_df[COL_UNALLOCATED] == 'YES'])
+    unallocated_ids = filtered_df[filtered_df[COL_UNALLOCATED] == 'YES'].index.tolist()
+    
+    # Bay hour maintenance percentage (employees with >= 7 hours)
+    bay_compliant_count = len(filtered_df[filtered_df[BAY_FLOAT] >= BAY_HOUR_MANDATE])
+    bay_maintenance_percentage = round((bay_compliant_count / total_employees) * 100, 1) if total_employees > 0 else 0
+    
+    # Prepare card data with hover information
+    cards_data = {
+        'total_employees': {
+            'value': total_employees,
+            'title': 'Total Employees',
+            'hover_info': f"Filtered employees count"
+        },
+        'avg_in_time': {
+            'value': avg_in_time,
+            'title': 'Avg. In Time',
+            'hover_info': f"Most common check-in time"
+        },
+        'avg_out_time': {
+            'value': avg_out_time,
+            'title': 'Avg. Out Time', 
+            'hover_info': f"Most common check-out time"
+        },
+        'avg_office_hrs': {
+            'value': avg_office_hrs,
+            'title': 'Avg. Office Hours',
+            'hover_info': f"Average total office presence"
+        },
+        'avg_full_day_leaves': {
+            'value': avg_full_day_leaves,
+            'title': 'Avg. Full Day Leaves',
+            'hover_info': f"Average full day leaves per employee"
+        },
+        'avg_half_day_leaves': {
+            'value': avg_half_day_leaves,
+            'title': 'Avg. Half Day Leaves',
+            'hover_info': f"Average half day leaves per employee"
+        },
+        'unbilled_count': {
+            'value': unbilled_count,
+            'title': 'Unbilled Resources',
+            'hover_info': f"IDs: {', '.join(unbilled_ids) if unbilled_ids else 'None'}"
+        },
+        'unallocated_count': {
+            'value': unallocated_count,
+            'title': 'Unallocated Resources',
+            'hover_info': f"IDs: {', '.join(unallocated_ids) if unallocated_ids else 'None'}"
+        },
+        'bay_maintenance': {
+            'value': f"{bay_maintenance_percentage}%",
+            'title': 'Bay Hours Compliance',
+            'hover_info': f"{bay_compliant_count}/{total_employees} employees meet 7h mandate"
+        }
+    }
+    
+    # Generate charts
+    charts_data = generate_overview_charts(filtered_df)
+    
+    # Prepare high and low bay hours tables - FIXED: Use the actual index (Employee ID)
+    high_bay_employees = filtered_df.nlargest(5, BAY_FLOAT)[[COL_DESIGNATION, COL_ACCOUNT, BAY_FLOAT]].copy()
+    high_bay_employees['Bay_Hours_Display'] = high_bay_employees[BAY_FLOAT].apply(float_to_h_mm)
+    high_bay_employees = high_bay_employees.reset_index().rename(columns={COL_FAKEID: 'Employee ID'})
+    
+    low_bay_employees = filtered_df.nsmallest(5, BAY_FLOAT)[[COL_DESIGNATION, COL_ACCOUNT, BAY_FLOAT]].copy()
+    low_bay_employees['Bay_Hours_Display'] = low_bay_employees[BAY_FLOAT].apply(float_to_h_mm)
+    low_bay_employees = low_bay_employees.reset_index().rename(columns={COL_FAKEID: 'Employee ID'})
+    
+    # Get unique values for filters
+    unique_designations = ['All'] + sorted(filtered_df[COL_DESIGNATION].unique().tolist())
+    unique_accounts = ['All'] + sorted(filtered_df[COL_ACCOUNT].unique().tolist())
+    
+    return render_template("overview.html",
+                         cards_data=cards_data,
+                         charts_data=charts_data,
+                         high_bay_employees=high_bay_employees.to_dict('records'),
+                         low_bay_employees=low_bay_employees.to_dict('records'),
+                         unbilled_ids=unbilled_ids,
+                         unallocated_ids=unallocated_ids,
+                         filters={
+                             'designations': unique_designations,
+                             'accounts': unique_accounts,
+                             'selected_designation': selected_designation,
+                             'selected_account': selected_account
+                         },
+                         is_initial_load=False)
+
+def generate_overview_charts(filtered_df):
+    """Generate charts for the overview page"""
+    charts = {}
+    
+    if filtered_df.empty:
+        # Return empty chart JSONs if no data
+        charts['time_metrics_bar'] = "{}"
+        charts['productivity_scatter'] = "{}"
+        charts['compliance_distribution'] = "{}"
+        return charts
+    
+    # Chart 1: Time Metrics Bar Chart (Bay, Break, OOO, Cafe Hours)
+    try:
+        avg_bay = filtered_df[BAY_FLOAT].mean()
+        avg_break = filtered_df[BREAK_FLOAT].mean()
+        avg_ooo = filtered_df[OOO_FLOAT].mean()
+        avg_cafe = filtered_df[CAFE_FLOAT].mean()
+        
+        metrics = ['Bay Hours', 'Break Hours', 'Out of Office', 'Cafeteria']
+        values = [avg_bay, avg_break, avg_ooo, avg_cafe]
+        display_values = [float_to_h_mm(v) for v in values]
+        
+        # Create bar chart
+        bar_trace = {
+            'x': metrics,
+            'y': values,
+            'type': 'bar',
+            'marker': {
+                'color': [ACCENT_HEADER, ACCENT_AMBER, ACCENT_RED, ACCENT_BLUE_MU],
+                'line': {'width': 2, 'color': 'darkgray'}
+            },
+            'text': display_values,
+            'textposition': 'auto',
+            'hovertemplate': '<b>%{x}</b><br>Average: %{text}<extra></extra>'
+        }
+        
+        bar_layout = {
+            'title': 'Average Time Distribution Across Key Metrics',
+            'xaxis': {'title': 'Time Metrics'},
+            'yaxis': {'title': 'Average Hours'},
+            'height': 400,
+            'showlegend': False,
+            'template': 'plotly_white'
+        }
+        
+        charts['time_metrics_bar'] = json.dumps({'data': [bar_trace], 'layout': bar_layout})
+        
+    except Exception as e:
+        print(f"Error creating time metrics bar chart: {e}")
+        charts['time_metrics_bar'] = "{}"
+    
+    # Chart 2: Productivity vs Break Time Scatter Plot
+    try:
+        scatter_trace = {
+            'x': filtered_df[BAY_FLOAT].tolist(),
+            'y': filtered_df[BREAK_FLOAT].tolist(),
+            'mode': 'markers',
+            'type': 'scatter',
+            'marker': {
+                'size': 10,
+                'color': filtered_df[BAY_FLOAT].apply(
+                    lambda x: ACCENT_GREEN if x >= BAY_HOUR_MANDATE else 
+                             ACCENT_AMBER if x >= CRITICAL_BAY_LIMIT else ACCENT_RED
+                ).tolist(),
+                'line': {'width': 1, 'color': 'darkgray'}
+            },
+            'text': filtered_df.index.tolist(),
+            'hovertemplate': '<b>Employee: %{text}</b><br>Bay Hours: %{x:.1f}<br>Break Hours: %{y:.1f}<extra></extra>'
+        }
+        
+        scatter_layout = {
+            'title': 'Productivity vs Break Time Analysis',
+            'xaxis': {'title': 'Bay Hours (Productivity)'},
+            'yaxis': {'title': 'Break Hours (Non-Productive Time)'},
+            'height': 400,
+            'showlegend': False,
+            'shapes': [
+                {
+                    'type': 'line',
+                    'x0': BAY_HOUR_MANDATE, 'x1': BAY_HOUR_MANDATE,
+                    'y0': 0, 'y1': filtered_df[BREAK_FLOAT].max() if not filtered_df.empty else 5,
+                    'line': {'color': ACCENT_GREEN, 'width': 2, 'dash': 'dash'}
+                }
+            ]
+        }
+        
+        charts['productivity_scatter'] = json.dumps({'data': [scatter_trace], 'layout': scatter_layout})
+        
+    except Exception as e:
+        print(f"Error creating productivity scatter chart: {e}")
+        charts['productivity_scatter'] = "{}"
+    
+    # Chart 3: Compliance Distribution Pie Chart
+    try:
+        # Calculate compliance distribution
+        compliant_count = len(filtered_df[filtered_df[BAY_FLOAT] >= BAY_HOUR_MANDATE])
+        warning_count = len(filtered_df[(filtered_df[BAY_FLOAT] >= CRITICAL_BAY_LIMIT) & (filtered_df[BAY_FLOAT] < BAY_HOUR_MANDATE)])
+        critical_count = len(filtered_df[filtered_df[BAY_FLOAT] < CRITICAL_BAY_LIMIT])
+        
+        labels = ['Compliant (≥7h)', 'Warning (5-7h)', 'Critical (<5h)']
+        values = [compliant_count, warning_count, critical_count]
+        colors = [ACCENT_GREEN, ACCENT_AMBER, ACCENT_RED]
+        
+        # Create pie chart
+        pie_trace = {
+            'labels': labels,
+            'values': values,
+            'type': 'pie',
+            'marker': {'colors': colors},
+            'hole': 0.4,
+            'textinfo': 'percent+label',
+            'hovertemplate': '<b>%{label}</b><br>Count: %{value}<br>Percentage: %{percent}<extra></extra>'
+        }
+        
+        pie_layout = {
+            'title': 'Bay Hours Compliance Distribution',
+            'height': 400,
+            'showlegend': True,
+            'annotations': [{
+                'text': 'Compliance',
+                'x': 0.5, 'y': 0.5,
+                'font': {'size': 16},
+                'showarrow': False
+            }]
+        }
+        
+        charts['compliance_distribution'] = json.dumps({'data': [pie_trace], 'layout': pie_layout})
+            
+    except Exception as e:
+        print(f"Error creating compliance distribution chart: {e}")
+        charts['compliance_distribution'] = "{}"
+    
+    return charts
+
 
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
+# Add this route to handle overview page redirection
+@app.route("/overview_redirect")
+def overview_redirect():
+    return redirect(url_for("overview"))
 
 @app.route("/employee_selection_redirect")
 def employee_selection_redirect():

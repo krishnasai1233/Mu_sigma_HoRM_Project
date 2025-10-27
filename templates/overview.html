@@ -1,84 +1,1003 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
-    <title>Executive Overview</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overview Dashboard - Workforce Analytics</title>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f4f4f4;}
-        .container { padding: 50px; max-width: 1400px; margin:auto;}
-        .filters select { padding:10px 15px; margin-right:10px; }
-        .metric-cards { display:flex; gap:30px; margin-bottom:40px; flex-wrap:wrap;}
-        .metric-card { background:#660000; color:white; width:300px; min-height:150px; border-radius:20px; display:flex; flex-direction:column; justify-content:center; align-items:center; box-shadow:0 10px 25px rgba(0,0,0,0.3);}
-        .graphs { display:flex; flex-wrap:wrap; gap:30px; }
-        .graph-card { background:rgba(255,255,255,0.9); padding:15px; border-radius:20px; width:620px; text-align:center;}
+        /* --- Mu Sigma Color Palette --- */
+        :root {
+            --mu-primary: #660000;
+            --mu-secondary: #8B0000;
+            --mu-accent: #A63C00;
+            --mu-success: #28A745;
+            --mu-warning: #FFB300;
+            --mu-danger: #DC3545;
+            --mu-light: #F8F9FA;
+            --mu-dark: #212529;
+            --mu-white: #FFFFFF;
+            --mu-border: #E0E0E0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--mu-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-top: 70px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--mu-primary);
+            color: var(--mu-white);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 12px rgba(102, 0, 0, 0.15);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--mu-white);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            background: var(--mu-accent);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--mu-white);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .logo-img {
+            height: 35px;
+            width: auto;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            color: var(--mu-primary);
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 100px auto 40px;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        /* Filters Section */
+        .filters-section {
+            background: var(--mu-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            border: 1px solid var(--mu-border);
+        }
+
+        .filters-section h2 {
+            color: var(--mu-primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .filters-form {
+            display: flex;
+            gap: 1.5rem;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--mu-dark);
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--mu-border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--mu-white);
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--mu-accent);
+            box-shadow: 0 0 0 3px rgba(166, 60, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--mu-accent);
+            color: var(--mu-white);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--mu-secondary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(166, 60, 0, 0.3);
+        }
+
+        /* Metrics Cards Grid */
+        .metrics-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: var(--mu-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--mu-white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.08);
+            border-left: 4px solid var(--mu-primary);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: visible;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(102, 0, 0, 0.12);
+        }
+
+        .metric-card.success {
+            border-left-color: var(--mu-success);
+        }
+
+        .metric-card.warning {
+            border-left-color: var(--mu-warning);
+        }
+
+        .metric-card.danger {
+            border-left-color: var(--mu-danger);
+        }
+
+        .metric-card.info {
+            border-left-color: var(--mu-accent);
+        }
+
+        .metric-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            opacity: 0.1;
+        }
+
+        .metric-card h4 {
+            font-size: 0.9rem;
+            color: var(--mu-dark);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .metric-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--mu-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-card.success .value {
+            color: var(--mu-success);
+        }
+
+        .metric-card.warning .value {
+            color: var(--mu-warning);
+        }
+
+        .metric-card.danger .value {
+            color: var(--mu-danger);
+        }
+
+        .metric-card.info .value {
+            color: var(--mu-accent);
+        }
+
+        .metric-card .trend {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .trend.positive {
+            color: var(--mu-success);
+        }
+
+        .trend.negative {
+            color: var(--mu-danger);
+        }
+
+        .trend.neutral {
+            color: var(--mu-accent);
+        }
+
+        /* Tooltip Styles */
+        .metric-card.has-tooltip {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tooltip {
+            visibility: hidden;
+            width: 300px;
+            background: var(--mu-dark);
+            color: var(--mu-white);
+            text-align: left;
+            border-radius: 8px;
+            padding: 1.25rem;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            font-size: 0.9rem;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -8px;
+            border-width: 8px;
+            border-style: solid;
+            border-color: var(--mu-dark) transparent transparent transparent;
+        }
+
+        .metric-card.has-tooltip:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .tooltip-content {
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.4;
+        }
+
+        .employee-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .employee-id {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+
+        .tooltip-footer {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: var(--mu-white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.08);
+            border: 1px solid var(--mu-border);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            color: var(--mu-primary);
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .chart-plot {
+            height: 400px;
+            width: 100%;
+            border-radius: 8px;
+            background: var(--mu-white);
+        }
+
+        /* Performance Tables */
+        .tables-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .table-container {
+            background: var(--mu-white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.08);
+            border: 1px solid var(--mu-border);
+        }
+
+        .table-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--mu-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 2px solid var(--mu-border);
+            padding-bottom: 0.75rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--mu-border);
+        }
+
+        th {
+            background: var(--mu-light);
+            font-weight: 600;
+            color: var(--mu-primary);
+        }
+
+        .high-performer {
+            color: var(--mu-success);
+            font-weight: 600;
+        }
+
+        .low-performer {
+            color: var(--mu-danger);
+            font-weight: 600;
+        }
+
+        /* Initial Load Message */
+        .initial-load {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--mu-white);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(102, 0, 0, 0.08);
+        }
+
+        .initial-load i {
+            font-size: 4rem;
+            color: var(--mu-accent);
+            margin-bottom: 1.5rem;
+        }
+
+        .initial-load h3 {
+            color: var(--mu-primary);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .initial-load p {
+            color: var(--mu-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: var(--mu-danger);
+            color: var(--mu-white);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* No Data Message */
+        .no-data {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--mu-primary);
+            color: var(--mu-white);
+            text-align: center;
+            padding: 2rem;
+            margin-top: auto;
+            width: 100%;
+        }
+
+        .footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer p:last-child {
+            margin-bottom: 0;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .tables-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .container {
+                margin-top: 140px;
+                padding: 0 15px;
+            }
+
+            .filters-form {
+                flex-direction: column;
+            }
+
+            .form-group {
+                min-width: 100%;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-plot {
+                height: 300px;
+            }
+
+            .tooltip {
+                width: 250px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .footer {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-link span {
+                display: none;
+            }
+
+            .chart-plot {
+                height: 250px;
+            }
+
+            .logo-text {
+                display: none;
+            }
+
+            .tooltip {
+                width: 220px;
+                font-size: 0.8rem;
+            }
+
+            .footer {
+                padding: 1rem;
+            }
+
+            .footer p {
+                font-size: 0.9rem;
+            }
+
+            .footer p:last-child {
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
+
 <body>
-<div class="container">
-    <h1>Executive Overview</h1>
-
-    <!-- Filters -->
-    <form method="get" action="{{ url_for('overview') }}">
-        <div class="filters">
-            <select name="account_filter" onchange="this.form.submit()">
-                <option value="All">All Accounts</option>
-                {% for acc in accounts %}
-                    <option value="{{ acc }}" {% if selected_account==acc %}selected{% endif %}>{{ acc }}</option>
-                {% endfor %}
-            </select>
-            <select name="designation_filter" onchange="this.form.submit()">
-                <option value="All">All Designations</option>
-                {% for des in designations %}
-                    <option value="{{ des }}" {% if selected_designation==des %}selected{% endif %}>{{ des }}</option>
-                {% endfor %}
-            </select>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">
+            <i class="fas fa-chart-bar"></i>
+            OVERVIEW DASHBOARD
         </div>
-    </form>
-
-    <!-- Metric Cards -->
-    <div class="metric-cards">
-        <div class="metric-card">
-            <h2>Total Employees</h2>
-            <p>{{ total_employees }}</p>
-        </div>
-        <div class="metric-card">
-            <h2>Avg Bay Hours</h2>
-            <p>{{ avg_bay }}</p>
-        </div>
-        <div class="metric-card">
-            <h2>Billed %</h2>
-            <p>{{ billed_pct }}%</p>
-            <small>Unbilled: {{ unbilled_count }}</small>
-        </div>
-        <div class="metric-card">
-            <h2>Total Leave Days</h2>
-            <p>{{ total_leave_days }}</p>
+        <div class="nav-links">
+            <a href="{{ url_for('employee') }}" class="nav-link">
+                <i class="fas fa-user-circle"></i>
+                <span>EMPLOYEE DEEP DIVE</span>
+            </a>
+            <a href="{{ url_for('account') }}" class="nav-link">
+                <i class="fas fa-building"></i>
+                <span>ACCOUNT ANALYSIS</span>
+            </a>
+            <a href="{{ url_for('overview') }}" class="nav-link active">
+                <i class="fas fa-chart-bar"></i>
+                <span>OVERVIEW DASHBOARD</span>
+            </a>
+            <div class="logo-container" onclick="redirectToHome()" style="cursor: pointer;">
+                <img src="static/mu_logo_new.png" alt="Mu Sigma Logo" class="logo-img" onerror="this.style.display='none'">
+            </div>
         </div>
     </div>
 
-    <!-- Graphs -->
-    <div class="graphs">
-        <div class="graph-card" id="dist_graph"></div>
-        <div class="graph-card" id="billing_graph"></div>
-        <div class="graph-card" id="prod_graph"></div>
-        <div class="graph-card" id="shift_graph"></div>
-    </div>
-</div>
+    <div class="container">
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <h2><i class="fas fa-filter"></i> Overview Analytics Filters</h2>
+            <form method="POST" action="{{ url_for('overview') }}" class="filters-form">
+                <div class="form-group">
+                    <label for="designation_filter">Designation</label>
+                    <select id="designation_filter" name="designation_filter">
+                        <option value="All" {% if filters.selected_designation=='All' %}selected{% endif %}>All Designations</option>
+                        {% for designation in filters.designations %}
+                            {% if designation != 'All' %}
+                            <option value="{{ designation }}" {% if designation==filters.selected_designation %}selected{% endif %}>{{ designation }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="account_filter">Account</label>
+                    <select id="account_filter" name="account_filter">
+                        <option value="All" {% if filters.selected_account=='All' %}selected{% endif %}>All Accounts</option>
+                        {% for account in filters.accounts %}
+                            {% if account != 'All' %}
+                            <option value="{{ account }}" {% if account==filters.selected_account %}selected{% endif %}>{{ account }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-rocket"></i>
+                    Apply Filters
+                </button>
+            </form>
+            {% if error %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ error }}
+            </div>
+            {% endif %}
+        </div>
 
-<script>
-    function renderPlot(id, json_data) {
-        if(json_data){
-            var fig = JSON.parse(json_data);
-            Plotly.newPlot(id, fig.data, fig.layout);
+        {% if not is_initial_load %}
+        <!-- Metrics Cards Section -->
+        <div class="metrics-section">
+            <h2 class="section-title"><i class="fas fa-tachometer-alt"></i> Workforce Overview Metrics</h2>
+            <div class="cards-grid">
+                <!-- Total Employees -->
+                <div class="metric-card">
+                    <i class="fas fa-users metric-icon"></i>
+                    <h4>Total Employees</h4>
+                    <div class="value">{{ cards_data.total_employees.value }}</div>
+                    <div class="trend positive">
+                        <i class="fas fa-chart-line"></i>
+                        Workforce Size
+                    </div>
+                </div>
+
+                <!-- Average In Time -->
+                <div class="metric-card">
+                    <i class="fas fa-sign-in-alt metric-icon"></i>
+                    <h4>Avg. In Time</h4>
+                    <div class="value">{{ cards_data.avg_in_time.value }}</div>
+                    <div class="trend positive">
+                        <i class="fas fa-clock"></i>
+                        Start Time
+                    </div>
+                </div>
+
+                <!-- Average Out Time -->
+                <div class="metric-card">
+                    <i class="fas fa-sign-out-alt metric-icon"></i>
+                    <h4>Avg. Out Time</h4>
+                    <div class="value">{{ cards_data.avg_out_time.value }}</div>
+                    <div class="trend positive">
+                        <i class="fas fa-clock"></i>
+                        End Time
+                    </div>
+                </div>
+
+                <!-- Average Office Hours -->
+                <div class="metric-card">
+                    <i class="fas fa-building metric-icon"></i>
+                    <h4>Avg. Office Hours</h4>
+                    <div class="value">{{ cards_data.avg_office_hrs.value }}</div>
+                    <div class="trend positive">
+                        <i class="fas fa-business-time"></i>
+                        Presence
+                    </div>
+                </div>
+
+                <!-- Average Full Day Leaves -->
+                <div class="metric-card info">
+                    <i class="fas fa-calendar-day metric-icon"></i>
+                    <h4>Avg. Full Day Leaves</h4>
+                    <div class="value">{{ cards_data.avg_full_day_leaves.value }}</div>
+                    <div class="trend neutral">
+                        <i class="fas fa-calendar-alt"></i>
+                        Leave Pattern
+                    </div>
+                </div>
+
+                <!-- Average Half Day Leaves -->
+                <div class="metric-card info">
+                    <i class="fas fa-calendar-minus metric-icon"></i>
+                    <h4>Avg. Half Day Leaves</h4>
+                    <div class="value">{{ cards_data.avg_half_day_leaves.value }}</div>
+                    <div class="trend neutral">
+                        <i class="fas fa-calendar"></i>
+                        Leave Pattern
+                    </div>
+                </div>
+
+                <!-- Unbilled Resources with Tooltip -->
+                <div class="metric-card danger has-tooltip" style="position: relative;">
+                    <i class="fas fa-exclamation-triangle metric-icon"></i>
+                    <h4>Unbilled Resources</h4>
+                    <div class="value">{{ cards_data.unbilled_count.value }}</div>
+                    <div class="trend negative">
+                        <i class="fas fa-money-bill-wave"></i>
+                        Financial Risk
+                    </div>
+                    {% if cards_data.unbilled_count.value > 0 %}
+                    <div class="tooltip">
+                        <div class="tooltip-header">
+                            <i class="fas fa-money-bill-wave"></i>
+                            Unbilled Employees ({{ unbilled_ids|length }})
+                        </div>
+                        <div class="tooltip-content">
+                            These employees are currently unbilled and represent financial risk.
+                        </div>
+                        <div class="employee-list">
+                            {% for id in unbilled_ids %}
+                            <div class="employee-id">{{ id }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Unallocated Resources with Tooltip -->
+                <div class="metric-card warning has-tooltip" style="position: relative;">
+                    <i class="fas fa-user-slash metric-icon"></i>
+                    <h4>Unallocated Resources</h4>
+                    <div class="value">{{ cards_data.unallocated_count.value }}</div>
+                    <div class="trend negative">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Utilization Issue
+                    </div>
+                    {% if cards_data.unallocated_count.value > 0 %}
+                    <div class="tooltip">
+                        <div class="tooltip-header">
+                            <i class="fas fa-user-slash"></i>
+                            Unallocated Employees ({{ unallocated_ids|length }})
+                        </div>
+                        <div class="tooltip-content">
+                            These employees are currently not assigned to any project.
+                        </div>
+                        <div class="employee-list">
+                            {% for id in unallocated_ids %}
+                            <div class="employee-id">{{ id }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Bay Hours Compliance -->
+                <div class="metric-card success">
+                    <i class="fas fa-check-circle metric-icon"></i>
+                    <h4>Bay Hours Compliance</h4>
+                    <div class="value">{{ cards_data.bay_maintenance.value }}</div>
+                    <div class="trend positive">
+                        <i class="fas fa-shield-alt"></i>
+                        Policy Adherence
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <!-- Time Metrics Bar Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title"><i class="fas fa-chart-bar"></i> Average Time Distribution</h3>
+                </div>
+                <div id="time_metrics_chart" class="chart-plot"></div>
+            </div>
+
+            <!-- Productivity vs Break Time Scatter Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title"><i class="fas fa-chart-scatter"></i> Productivity vs Break Time Analysis</h3>
+                </div>
+                <div id="productivity_scatter_chart" class="chart-plot"></div>
+            </div>
+
+            <!-- Compliance Distribution Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title"><i class="fas fa-chart-pie"></i> Compliance Distribution</h3>
+                </div>
+                <div id="compliance_distribution_chart" class="chart-plot"></div>
+            </div>
+        </div>
+
+        <!-- Performance Tables Section -->
+        <div class="tables-section">
+            <!-- High Performers Table -->
+            <div class="table-container">
+                <h3 class="table-title"><i class="fas fa-trophy"></i> Top Performers (Highest Bay Hours)</h3>
+                {% if high_bay_employees %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee ID</th>
+                            <th>Designation</th>
+                            <th>Account</th>
+                            <th>Bay Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for emp in high_bay_employees %}
+                        <tr>
+                            <td>{{ emp['Employee ID'] }}</td>
+                            <td>{{ emp['DESIGNATION'] }}</td>
+                            <td>{{ emp['ACCOUNT CODE'] }}</td>
+                            <td class="high-performer">{{ emp['Bay_Hours_Display'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="no-data">No data available for current filters</div>
+                {% endif %}
+            </div>
+
+            <!-- Low Performers Table -->
+            <div class="table-container">
+                <h3 class="table-title"><i class="fas fa-exclamation-triangle"></i> Needs Attention (Lowest Bay Hours)</h3>
+                {% if low_bay_employees %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee ID</th>
+                            <th>Designation</th>
+                            <th>Account</th>
+                            <th>Bay Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for emp in low_bay_employees %}
+                        <tr>
+                            <td>{{ emp['Employee ID'] }}</td>
+                            <td>{{ emp['DESIGNATION'] }}</td>
+                            <td>{{ emp['ACCOUNT CODE'] }}</td>
+                            <td class="low-performer">{{ emp['Bay_Hours_Display'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="no-data">No data available for current filters</div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% else %}
+        <!-- Initial Load Message -->
+        <div class="initial-load">
+            <i class="fas fa-chart-bar"></i>
+            <h3>Welcome to the Overview Dashboard</h3>
+            <p>Use the filters above to analyze workforce metrics across designations and accounts.</p>
+            <p style="color: var(--mu-accent); font-weight: 500;">
+                <i class="fas fa-lightbulb"></i>
+                Select filters and click "Apply Filters" to generate insights
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2025 Mu Sigma Analytics Platform. All rights reserved.</p>
+        <p>Transforming data into actionable insights for better decision making</p>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function renderPlotly(elementId, jsonString) {
+            try {
+                if (!jsonString || jsonString.trim() === 'null' || jsonString.trim() === '{}') {
+                    document.getElementById(elementId).innerHTML = '<div class="no-data">No chart data available for current filters</div>';
+                    return;
+                }
+
+                const graphData = JSON.parse(jsonString);
+
+                if (!graphData.data || !graphData.layout) {
+                    throw new Error("Invalid Plotly JSON structure.");
+                }
+
+                Plotly.newPlot(elementId, graphData.data, graphData.layout, { 
+                    responsive: true, 
+                    displayModeBar: true 
+                });
+            } catch (e) {
+                console.error(`Error rendering Plotly chart for ${elementId}:`, e);
+                document.getElementById(elementId).innerHTML = '<div class="no-data">Error loading chart data</div>';
+            }
         }
-    }
 
-    renderPlot('dist_graph', '{{ dist_json | safe }}');
-    renderPlot('billing_graph', '{{ billing_json | safe }}');
-    renderPlot('prod_graph', '{{ prod_json | safe }}');
-    renderPlot('shift_graph', '{{ shift_json | safe }}');
-</script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInitialLoad = '{{ is_initial_load }}' === 'True';
 
+            if (!isInitialLoad) {
+                // Render all three charts
+                const timeMetricsJson = '{{ charts_data.time_metrics_bar | default("{}") | safe }}';
+                const productivityScatterJson = '{{ charts_data.productivity_scatter | default("{}") | safe }}';
+                const complianceDistributionJson = '{{ charts_data.compliance_distribution | default("{}") | safe }}';
+
+                renderPlotly('time_metrics_chart', timeMetricsJson);
+                renderPlotly('productivity_scatter_chart', productivityScatterJson);
+                renderPlotly('compliance_distribution_chart', complianceDistributionJson);
+            }
+        });
+
+        function redirectToHome() {
+            window.location.href = "{{ url_for('index') }}";
+        }
+    </script>
+
+    <!-- Hidden data elements for charts -->
+    {% if not is_initial_load %}
+    <script id="time_metrics_data" type="application/json">{{ charts_data.time_metrics_bar | default("{}") | safe }}</script>
+    <script id="productivity_scatter_data" type="application/json">{{ charts_data.productivity_scatter | default("{}") | safe }}</script>
+    <script id="compliance_distribution_data" type="application/json">{{ charts_data.compliance_distribution | default("{}") | safe }}</script>
+    {% endif %}
 </body>
 </html>

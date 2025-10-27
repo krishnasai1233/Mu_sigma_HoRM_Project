@@ -134,7 +134,7 @@
         .stat-number {
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--mu-accent);
+            color: whitesmoke;
             display: block;
         }
 
@@ -434,6 +434,7 @@
 </div>
 
 <div class="cards-container">
+    <!-- Employee Deep Dive Card -->
     <a href="{{ url_for('employee_selection_redirect') }}" class="card-link">
         <div class="card">
             <div class="card-header">
@@ -460,6 +461,34 @@
         </div>
     </a>
 
+    <!-- Overview Dashboard Card - NOW IN MIDDLE POSITION -->
+    <a href="{{ url_for('overview_redirect') }}" class="card-link">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Overview Dashboard</h2>
+                    <p>Comprehensive analytics with filters, team metrics, and performance insights across all accounts and designations.</p>
+                    
+                    <ul class="card-features">
+                        <li><i class="fas fa-check"></i> Multi-dimensional filtering</li>
+                        <li><i class="fas fa-check"></i> Team performance metrics</li>
+                        <li><i class="fas fa-check"></i> Interactive visualizations</li>
+                        <li><i class="fas fa-check"></i> Real-time analytics</li>
+                    </ul>
+                    
+                    <span class="card-cta">
+                        View Overview Dashboard
+                        <i class="fas fa-arrow-right"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </a>
+
+    <!-- Account Performance Review Card -->
     <a href="{{ url_for('account_selection_redirect') }}" class="card-link">
         <div class="card">
             <div class="card-header">
@@ -521,7 +550,7 @@
 </div>
 
 <div class="footer">
-    <p>&copy; 2024 Mu Sigma Analytics Platform. All rights reserved.</p>
+    <p>&copy; 2025 Mu Sigma Analytics Platform. All rights reserved.</p>
     <p style="opacity: 0.8; margin-top: 0.5rem; font-size: 0.9rem;">
         Transforming data into actionable insights for better decision making
     </p>
