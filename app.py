@@ -1590,13 +1590,17 @@ def account_selection_redirect():
     return redirect(url_for("account"))
 
     
+# Load data and models once when the app starts
+if not os.path.exists('data'):
+    os.makedirs('data')
+
+df_raw = load_data()
+df, kmeans, _ = run_clustering_and_anomaly_detection(df_raw.copy())
+
 if __name__ == "__main__":
-    # Create a dummy data directory if not exists
-    if not os.path.exists('data'):
-        os.makedirs('data')
-        
-    # Re-read global data and run models for the app instance
-    df_raw = load_data()
-    df, kmeans, _ = run_clustering_and_anomaly_detection(df_raw.copy())
+    # Get port from Railway environment variable or default to 5000
+    port = int(os.environ.get('PORT', 5000))
     
-    app.run(debug=True)
+    # Run app with host '0.0.0.0' to accept external connections
+    # Disable debug mode for production
+    app.run(host='0.0.0.0', port=port, debug=False)
